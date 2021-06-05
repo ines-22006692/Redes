@@ -29,6 +29,7 @@ public class Servidor {
             listaPre.close();
 
 
+
             Scanner listaBra = new Scanner(whiteList);
 
             if (!listaBra.hasNextLine()) {

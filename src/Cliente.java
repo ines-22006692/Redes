@@ -113,5 +113,4 @@ public class Cliente extends Thread {
         Cliente novo = new Cliente();
         novo.start();
     }
-
 }

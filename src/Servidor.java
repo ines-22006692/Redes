@@ -1,15 +1,55 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class Servidor {
+    static final File blackList = new File("listaPreta.txt");
+    static final File whiteList = new File("listaBranca.txt");
+
 
     static HashMap<String, String> listaNegra = new HashMap();
     static HashMap<String, String> listaBranca = new HashMap();
-    static HashMap<String, String> listaOnline = new HashMap();
+     static ArrayList<String> onlineUsers = new ArrayList<String>();
+
     static BufferedReader leitura;
     static PrintStream printStream;
+
+    public static boolean verificacaoLista(String ipAddress) {
+        try {
+            //lista Preta em primeiro uma vez que em prioridade
+            Scanner listaPre = new Scanner(blackList);
+            while (listaPre.hasNextLine()) {
+                if (ipAddress.contains(listaPre.nextLine())) {
+                    listaPre.close();
+                    return false;
+                }
+            }
+            listaPre.close();
+
+
+            Scanner listaBra = new Scanner(whiteList);
+
+            if (!listaBra.hasNextLine()) {
+                listaBra.close();
+                return true;
+            }
+            while (listaBra.hasNextLine()) {
+                String linha = listaBra.nextLine();
+                if (ipAddress.contains(linha)) {
+                    listaBra.close();
+                    return true;
+                }
+            }
+            listaBra.close();
+            return false;
+        } catch (FileNotFoundException e) {
+            System.err.println(e);
+            return false;
+            }
+
+    }
 
     public static void leituraListas()  throws FileNotFoundException {
         //Forma errada, tem que estar num ficheiro txt
@@ -80,30 +120,43 @@ public class Servidor {
         int posicaoLista = 0;
         private InetAddress address;
         private byte[] buf = new byte[256];
-        //envio
 
         public void run() {
-
+            int userName = 0;
+            String clientIP = socket.getInetAddress().toString();
+            System.out.println(clientIP);
+            if (verificacaoLista(clientIP))
+            {
+                onlineUsers.add(clientIP);
+            } else {
+                try {
+                    socket.close();
+                    System.out.println("Connecção rejeitada");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             try {
-                String userName = leitura.readLine();
+                Scanner opcaoMenu = new Scanner(System.in);
+                userName = opcaoMenu.nextInt();
                 do {
                     switch (userName) {
-                        case "0":
+                        case 0:
                             //Apresenta o menu novamente
-                            System.out.println("0");
+                            //System.out.println("0");
                             printStream.println(menu());
                             break;
-                        case "1": {
-                            System.out.println("Utilizadores onlines:\n");
-                            System.out.println(listaOnline.toString());
+                        case 1: {
+                            printStream.println(onlineUsers);
                             break;
                         }
-                        case "2": {
+                        case 2: {
                             System.out.println("Qual é o IP que deseja enviar uma mensagem? ");
                             String mensagemIP = leitura.readLine();
                             StringBuilder answer = new StringBuilder();
                             System.out.println("Qual é a mensagem que pretende enviar? ");
-                            String mensage = leitura.readLine();
+                            Scanner op = new Scanner(System.in);
+                            String mensage = op.nextLine();
                             byte[] mensagemBytes = mensage.getBytes();
                             com = new DatagramSocket();
 
@@ -119,13 +172,14 @@ public class Servidor {
                             //printStream a fechar??
                             break;
                         }
-                        case "3": {
+                        case 3: {
                             System.out.println("Qual é a mensagem que pretende enviar? ");
-                            String mens = leitura.readLine();
+                            Scanner opc = new Scanner(System.in);
+                            String mens = opc.nextLine();
                             byte[] mensagemBytes = mens.getBytes();
                             com = new DatagramSocket();
 
-                            for (String i : listaOnline.keySet()) {
+                            for (String i : onlineUsers ) {
                                 try {
                                     this.address = InetAddress.getByName(i);
                                     DatagramPacket packet = new DatagramPacket(mensagemBytes, mensagemBytes.length, address, 9031);
@@ -138,76 +192,53 @@ public class Servidor {
                             com.close();
                             break;
                         }
-                        case "4": {
-                            System.out.println("Lista branca:\n");
-                            System.out.println(listaBranca);
+                        case 4: {
+                            StringBuilder branca = new StringBuilder();
+                            for (String host : listaBranca.keySet()){
+                                branca.append(host).append(listaBranca.get(host));
+                            }
+                            printStream.println(whiteList);
                             break;
                         }
-                        case "5": {
-                            System.out.println("Lista negra:\n");
-                            System.out.println(listaNegra);
+                        case 5: {
+                            StringBuilder negra = new StringBuilder();
+                            for (String host : listaNegra.keySet()){
+                                negra.append(host).append(listaNegra.get(host));
+                            }
+                           // System.out.println(blackList);
+                           // printStream.println(blackList);
                             break;
                         }
-                        case "99": {
+                        case 99: {
                             System.out.println("A Sair\n");
                             System.out.println("Cliente Desconhectado..");
                             break;
                         }
                     }
-                } while (!userName.equals("99"));
+                } while (userName != 99);
             } catch (IOException error) {
                 error.printStackTrace();
             }
-            com.close();
+
         }
 
     }
 
     public static void main(String args[]) throws Exception {
-        listaNegra.put("192.168.10.10", "Offline");
-        listaNegra.put("192.168.10.15", "Offline");
-        listaNegra.put("192.168.10.110", "Offline");
-
-        listaBranca.put("192.168.10.12", "Offline");
-        listaBranca.put("192.168.10.22", "Offline");
-        listaBranca.put("192.168.10.110", "Offline");
-        listaBranca.put("192.168.10.74", "Offline");
-
-        listaOnline.put("192.168.10.191","Online");
         ServerSocket server = new ServerSocket(7142);
-        Socket socket = null;
-        while (true){
-            socket = server.accept();
-            PrintStream stream = new PrintStream(socket.getOutputStream());
-            stream.println(" ");
-            Thread thread = new Thread(new Server_Manager(socket));
-            thread.start();
-        }
-
-
-
-
-        // leituraListas();
-        //Criar lista online, e a medida que as pessoas vao entrando, ele vao conectares, tem que ler de um ficheiro e selecionar o que sao da lista negra e da lista branca
-        /*
-/*
-        ServerSocket server = new ServerSocket(6500);
-        Socket socket= null;
-        InetAddress IP = InetAddress.getLocalHost();
-        while(true)  {
-            socket = server.accept();
-            for (String ipLista : listaBranca.keySet()){
-                if (ipLista.equals(IP)){
-
-                }
+        InetAddress myIPaddress = InetAddress.getLocalHost();
+        //System.out.println(myIPaddress.toString() + ":" + 7142 );
+        Socket client = null;
+        try {
+            while (true){
+                client = server.accept();
+                Thread t = new Thread(new Server_Manager(client));
+                t.start();
             }
-        }*/
-
-
-
-
-
-
+        }catch (Exception e) {
+            System.err.println(e);
+            server.close();
+        }
     }
 }
 

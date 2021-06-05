@@ -49,14 +49,8 @@ public class Cliente extends Thread {
                 userName = opcaoMenu.nextInt();
                 switch (userName){
                     case 0:
-                        //Apresenta o menu novamente
-                        ps.println("0");
-                        String texto = input.readLine();
-                        while (!texto.equals("")){
-                            System.out.println(input.readLine());
-                            texto = input.readLine();
-                        }
-                        break;
+                        System.out.println(menu());
+                        continue;
                     case 1:
                         ps.println("1");
                         System.out.println("Utilizadores onlines:\n");
@@ -64,11 +58,13 @@ public class Cliente extends Thread {
                     case 2:
                         ps.println("2");
                         try {
-                            input.readLine();
-                            String mensagemIP = lido.nextLine();
+                           // input.readLine();
+                            Scanner op = new Scanner(System.in);
+                            String mensagemIP = op.nextLine();
                             ps.println(mensagemIP);
-                            input.readLine();
-                            String mensagem = lido.nextLine();
+                            //input.readLine();
+                            Scanner opc = new Scanner(System.in);
+                            String mensagem = opc.nextLine();
                             ps.println(mensagem);
                             this.address = InetAddress.getByName(ip);
                             pos = mensagem.getBytes();
@@ -80,7 +76,8 @@ public class Cliente extends Thread {
                         break;
                     case 3:
                         ps.println("3");
-                        String mensagem = lido.nextLine();
+                        Scanner op = new Scanner(System.in);
+                        String mensagem = op.nextLine();
                         ps.println(mensagem);
                         com = new DatagramSocket();
                         this.address = InetAddress.getByName(ip);
@@ -92,7 +89,7 @@ public class Cliente extends Thread {
                     case 4:
                         ps.println("4");
                         System.out.println("Lista branca:\n");
-                        System.out.println(Servidor.listaBranca);
+                        System.out.println(Servidor.onlineUsers);
                         break;
                     case 5:
                         ps.println("5");
@@ -109,73 +106,12 @@ public class Cliente extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        /*
-        while (true){
-
-            try {
-                System.out.println("Waiting for client on port " +
-                        serverSocket.getLocalPort() + "...");
-                Socket server = serverSocket.accept();
-
-                System.out.println("Just connected to " + server.getRemoteSocketAddress());
-                DataInputStream in = new DataInputStream(server.getInputStream());
-
-                System.out.println(in.readUTF());
-                DataOutputStream out = new DataOutputStream(server.getOutputStream());
-                out.writeUTF("Thank you for connecting to " + server.getLocalSocketAddress()
-                        + "\nGoodbye!");
-                server.close();
-
-            } catch (SocketTimeoutException s) {
-                System.out.println("Socket timed out!");
-                break;
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
-        }
-
-         */
     }
     // usage: java EchoClient <servidor> <mensagem>
-    public static void main(String args[]) {
+    public static void main(String args[])
+    {
         Cliente novo = new Cliente();
         novo.start();
-        ip = args[0];
-
-
-
-       /*
-       lido= new Scanner(System.in);
-
-
-
-       //Apresenta o menu
-        menu();
-
-        //Leitura da opção
-        Scanner opcaoMenu = new Scanner(System.in);
-        int userName = opcaoMenu.nextInt();
-
-
-
-
-        Socket socket = new Socket(args[0], 6500);
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(socket.getInputStream()));
-        PrintStream ps = new PrintStream(socket.getOutputStream());
-        ps.println(args[1]); // escreve mensagem na socket
-// imprime resposta do servidor
-        System.out.println("Recebido : " + br.readLine());
-// termina socket
-        socket.close();
-
-
-
-        teclado = new Scanner(System.in);
-        Cliente cliente = new Cliente();
-        cliente.start();
-        */
     }
 
 }

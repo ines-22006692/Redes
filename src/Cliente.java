@@ -30,15 +30,13 @@ public class Cliente extends Thread {
                 "99 – Sair\n";
     }
 
-    public static Scanner lido;
-
     public void run()
     {
         Socket socket;
 
         try {
             socket = new Socket(ip, 7142);
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            //BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintStream ps = new PrintStream(socket.getOutputStream());
 
             int userName = 0;
@@ -89,12 +87,12 @@ public class Cliente extends Thread {
                     case 4:
                         ps.println("4");
                         System.out.println("Lista branca:\n");
-                        System.out.println(Servidor.onlineUsers);
+                        System.out.println(Servidor.listaOnline);
                         break;
                     case 5:
                         ps.println("5");
                         System.out.println("Lista negra:\n");
-                        //System.out.println(listaNegra);
+                        System.out.println(Servidor.listaNegra);
                         break;
                     case 99:
                         System.out.println("A Sair\n");

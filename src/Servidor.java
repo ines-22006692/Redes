@@ -7,95 +7,43 @@ import java.util.Scanner;
 public class Servidor {
     static final File blackList = new File("listaPreta.txt");
     static final File whiteList = new File("listaBranca.txt");
-
-
     static HashMap<String, String> listaNegra = new HashMap();
     static HashMap<String, String> listaBranca = new HashMap();
-     static ArrayList<String> onlineUsers = new ArrayList<String>();
-
+     static ArrayList<String> listaOnline = new ArrayList<String>();
     static BufferedReader leitura;
     static PrintStream printStream;
 
     public static boolean verificacaoLista(String ipAddress) {
         try {
             //lista Preta em primeiro uma vez que em prioridade
-            Scanner listaPre = new Scanner(blackList);
-            while (listaPre.hasNextLine()) {
-                if (ipAddress.contains(listaPre.nextLine())) {
-                    listaPre.close();
+            Scanner listaLeituraPreta = new Scanner(blackList);
+            while (listaLeituraPreta.hasNextLine()) {
+                if (ipAddress.contains(listaLeituraPreta.nextLine())) {
+                    listaLeituraPreta.close();
                     return false;
                 }
             }
-            listaPre.close();
+            listaLeituraPreta.close();
 
 
 
-            Scanner listaBra = new Scanner(whiteList);
+            Scanner listaLeituraBranca = new Scanner(whiteList);
 
-            if (!listaBra.hasNextLine()) {
-                listaBra.close();
-                return true;
-            }
-            while (listaBra.hasNextLine()) {
-                String linha = listaBra.nextLine();
+
+            while (listaLeituraBranca.hasNextLine()) {
+                String linha = listaLeituraBranca.nextLine();
                 if (ipAddress.contains(linha)) {
-                    listaBra.close();
+                    listaLeituraBranca.close();
                     return true;
                 }
             }
-            listaBra.close();
+            listaLeituraBranca.close();
             return false;
         } catch (FileNotFoundException e) {
-            System.err.println(e);
+            e.printStackTrace();
             return false;
             }
 
-    }
-
-    public static void leituraListas()  throws FileNotFoundException {
-        //Forma errada, tem que estar num ficheiro txt
-        listaNegra= new HashMap<>();
-        listaNegra.put("192.168.10.10","OFFLINE");
-        listaNegra.put("192.168.10.11","OFFLINE");
-        listaNegra.put("192.168.20.17","OFFLINE");
-
-
-        listaNegra = new HashMap<>();
-        listaNegra.put("192.168.10.07","OFFLINE");
-        listaNegra.put("192.168.0.09","OFFLINE");
-        listaNegra.put("127.0.0.1","OFFLINE");
-
-        /*
-        Scanner leitorFicheiroBranca = new Scanner(new FileReader("listaBranca.txt"));
-        System.out.println("2");
-        while (leitorFicheiroBranca.hasNext()) {
-            String linha = leitorFicheiroBranca.next();
-            String[] dados = linha.split(",");
-            if (dados.length ==2) {
-                String ip = dados[0].trim();
-                System.out.println(ip);
-
-                String estado = dados[1].trim();
-                //listaBranca.put(ip,estado);
-            }
-        }
-        Scanner leitorFicheiroPreta = new Scanner("listaPreta.txt");
-        System.out.println("1");
-        while (leitorFicheiroPreta.hasNextLine()) {
-            String linha = leitorFicheiroPreta.nextLine();
-            String[] dados = linha.split(",");
-            if (dados.length==2) {
-                System.out.println("aqui");
-                String ip = dados[0].trim();
-                String estado = dados[1].trim();
-                System.out.println(estado);
-                //listaNegra.put(ip, estado);
-            }
-        }
-        //System.out.println(listaBranca);
-        System.out.println("lista");
-        //System.out.println(listaNegra);
- */
     }
 
      static class Server_Manager implements Runnable {
@@ -118,7 +66,6 @@ public class Servidor {
         private DatagramSocket com;
         private byte[] pos = new byte[256];
         private Socket socket;
-        int posicaoLista = 0;
         private InetAddress address;
         private byte[] buf = new byte[256];
 
@@ -128,7 +75,7 @@ public class Servidor {
             System.out.println(clientIP);
             if (verificacaoLista(clientIP))
             {
-                onlineUsers.add(clientIP);
+                listaOnline.add(clientIP);
             } else {
                 try {
                     socket.close();
@@ -143,12 +90,10 @@ public class Servidor {
                 do {
                     switch (userName) {
                         case 0:
-                            //Apresenta o menu novamente
-                            //System.out.println("0");
                             printStream.println(menu());
                             break;
                         case 1: {
-                            printStream.println(onlineUsers);
+                            printStream.println(listaOnline);
                             break;
                         }
                         case 2: {
@@ -168,7 +113,7 @@ public class Servidor {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-
+                            printStream.println("mensagem entregue");
                             com.close();
                             //printStream a fechar??
                             break;
@@ -180,7 +125,7 @@ public class Servidor {
                             byte[] mensagemBytes = mens.getBytes();
                             com = new DatagramSocket();
 
-                            for (String i : onlineUsers ) {
+                            for (String i : listaOnline ) {
                                 try {
                                     this.address = InetAddress.getByName(i);
                                     DatagramPacket packet = new DatagramPacket(mensagemBytes, mensagemBytes.length, address, 9031);
@@ -189,7 +134,7 @@ public class Servidor {
                                     error.printStackTrace();
                                 }
                             }
-
+                            printStream.println("mensagem entregue");
                             com.close();
                             break;
                         }

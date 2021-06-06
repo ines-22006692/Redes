@@ -15,7 +15,7 @@ public class Udp {
     public String sendEcho(String msg) throws IOException {
         buf = msg.getBytes();
         DatagramPacket packet
-                = new DatagramPacket(buf, buf.length, address, 4445);
+                = new DatagramPacket(buf, buf.length, address, 9031);
         socket.send(packet);
         packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
